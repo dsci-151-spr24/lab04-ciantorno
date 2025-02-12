@@ -142,7 +142,7 @@ We don't need to tell R how many times to repeat the character string "United St
 ```
 
 ```{r}
-dennys <- dsbox::dennys %>%
+dennys <- dennys %>%
   mutate(country = "United States")
 ```
 
@@ -151,11 +151,11 @@ dennys <- dsbox::dennys %>%
     Take notes, you will need to use this information in the next exercise.
 
 ```{r}
-dsbox::laquinta %>%
+laquinta %>%
   filter(!(state %in% states$abbreviation))
 ```
 
-These La Quinta locations are in Mexico, Colombia, Honduras, and Canada.
+***These La Quinta locations are in Mexico, Colombia, Honduras, and Canada.***
 
 8.  Add a country variable to the La Quinta dataset.
     Use the `case_when` function to populate this variable.
@@ -180,12 +180,31 @@ Going forward we will work with the data from the United States only.
 All Denny's locations are in the United States, so we don't need to worry about them.
 However we do need to filter the La Quinta dataset for locations in United States.
 
-```{r eval=FALSE}
+```{r}
 laquinta <- laquinta %>%
   filter(country == "United States")
 ```
 
+(The above r code still is not working for me, so I did not change the eval to true.)
+
 9.  Which states have the most and fewest Denny's locations? What about La Quinta? Is this surprising? Why or why not?
+
+```{r}
+dennys %>%
+  group_by(state) %>% 
+  count() %>%
+  arrange(desc(n))
+```
+
+```{r}
+laquinta %>%
+  group_by(state) %>% 
+  count() %>%
+  arrange(desc(n))
+```
+
+
+***California has the most Denny's locations, with 403 in all, while Delaware has the lowest, with 1 location.  Texas has the most La Quinta hotels, at 237, while Maine has the least, at 1.***
 
 Next, let's calculate which states have the most Denny's locations *per thousand square miles*.
 This requires *joining* information from the frequency tables you created in Exercise 8 with information from the `states` data frame.
@@ -205,6 +224,25 @@ Before you move on the the next question, run the code above and take a look at 
 In the next exercise you will need to build on this pipe.
 
 10. Which states have the most Denny's locations per thousand square miles? What about La Quinta?
+
+```{r}
+dennys %>% 
+  count(state) %>%
+  inner_join(states, by = c("state" = "abbreviation")) %>%
+  mutate(per_thousand = n/area*1000) %>%
+  arrange(desc(per_thousand)) %>%
+  slice(1:5)
+```
+
+```{r}
+laquinta %>% 
+  count(state) %>%
+  inner_join(states, by = c("state" = "abbreviation")) %>%
+  mutate(per_thousand = n/area*1000) %>%
+  arrange(desc(per_thousand)) %>% 
+  slice(1:5)
+```
+
 
 Next, we put the two datasets together into a single data frame.
 However before we do so, we need to add an identifier variable.
@@ -239,9 +277,27 @@ You can also choose different themes to change the overall look of your plots, s
 11. Filter the data for observations in North Carolina only, and recreate the plot.
     You should also adjust the transparency of the points, by setting the `alpha` level, so that it's easier to see the overplotted ones.
     Visually, does Mitch Hedberg's joke appear to hold here?
+    
+```{r}
+dn_lq %>%
+  filter(state == "NC") %>%
+ggplot( mapping = aes(x = longitude, y = latitude, color = establishment)) +
+  geom_point(alpha=0.5)
+```
+
+***Visually, it looks like Hedberg's joke does not hold up that well, since not many La Quintas and Denny's are next to each other in North Carolina.***
 
 12. Now filter the data for observations in Texas only, and recreate the plot, with an appropriate `alpha` level.
     Visually, does Mitch Hedberg's joke appear to hold here?
+    
+```{r}
+dn_lq %>%
+  filter(state == "TX") %>%
+ggplot( mapping = aes(x = longitude, y = latitude, color = establishment)) +
+  geom_point(alpha=0.3)
+```
+
+***The joke holds up a lot better visually here, since many dots representing Denny's are close to dots that represent La Quinta.***
 
 That's it for now!
 In the next lab we will take a more quantitative approach to answering these questions.
